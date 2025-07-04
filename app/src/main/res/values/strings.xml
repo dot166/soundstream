@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">[CodeName]SoundStream</string>
+    <string name="app_name_short">SoundStream</string>
+    <string name="edit_station_registry">Edit Station Registry</string>
+    <string name="add_new_station_to_registry">Add new station to registry</string>
+    <string name="station_url_input">Station Url Input</string>
+    <string name="save_to_registry">Save to registry</string>
+</resources>
