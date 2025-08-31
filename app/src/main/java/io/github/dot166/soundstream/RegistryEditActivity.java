@@ -17,6 +17,10 @@ import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 
@@ -119,7 +123,11 @@ public class RegistryEditActivity extends jActivity {
             startActivityForResult(intent, 61016);
             return true;
         } else if (itemId == R.id.export_xml) {
-            Toast.makeText(this, "Not Yet Implemented, SAF Sucks to use and is confusing and there is no useful documentation on writing and updating files", LENGTH_LONG).show();
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("text/xml");
+            intent.putExtra(Intent.EXTRA_TITLE, "radioRegistry.xml"); // default filename
+            startActivityForResult(intent, 888);
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -135,7 +143,45 @@ public class RegistryEditActivity extends jActivity {
             stations = readXmlFromFile(this, "", fileUri);
             writeXmlToFile(this, "radioRegistry.xml", stations);
             rebuildTabs(findViewById(R.id.tabs));
+        } else if (requestCode == 888 && resultCode == RESULT_OK && data != null) {
+            Uri fileUri = data.getData();
+            if (fileUri != null) {
+                try {
+                    // Grab current stations from local registry
+                    List<RadioRegistryHelper.Station> currentStations =
+                            XmlHelper.readXmlFromFile(this, "radioRegistry.xml");
+
+                    String tempName = "temp_export.xml";
+                    XmlHelper.writeXmlToFile(this, tempName, currentStations);
+
+                    File tempFile = new File(getFilesDir(), tempName);
+
+                    // Copy temp file into SAF-chosen destination
+                    try (InputStream in = new FileInputStream(tempFile);
+                         OutputStream out = getContentResolver().openOutputStream(fileUri)) {
+
+                        if (out != null) {
+                            byte[] buffer = new byte[8192];
+                            int len;
+                            while ((len = in.read(buffer)) != -1) {
+                                out.write(buffer, 0, len);
+                            }
+                            out.flush();
+                        }
+                    }
+
+                    // Delete temp file after use
+                    tempFile.delete();
+
+                    Toast.makeText(this, "Registry exported successfully!", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    ErrorUtils.handle(e, this);
+                }
+            } else {
+                Toast.makeText(this, "No file selected.", Toast.LENGTH_SHORT).show();
+            }
         }
+
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
