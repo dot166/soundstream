@@ -1,39 +1,29 @@
 package io.github.dot166.soundstream;
 
-import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.OptIn;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.Timeline;
-import androidx.media3.common.util.UnstableApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
-import io.github.dot166.jlib.app.MediaPlayerActivity;
+import io.github.dot166.jlib.registry.RegistryHelper;
 
 public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHolder> {
 
-    private List<RadioRegistryHelper.Station> stations;
+    private List<RegistryHelper.Object> stations;
 
-    public StationAdapter(List<RadioRegistryHelper.Station> list) {
+    public StationAdapter(List<RegistryHelper.Object> list) {
         this.stations = list;
     }
 
-    public List<RadioRegistryHelper.Station> getStationList() {
+    public List<RegistryHelper.Object> getStationList() {
         return stations;
     }
 
@@ -47,16 +37,16 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int position) {
 
-        RadioRegistryHelper.Station currentStation = stations.get(position);
+        RegistryHelper.Object currentStation = stations.get(position);
 
-        viewHolder.stationName.setText(currentStation.getStationName());
+        viewHolder.stationName.setText(currentStation.getName());
 
-        if (currentStation.getStationLogoUrl() != null && !currentStation.getStationLogoUrl().isEmpty()) {
-            Glide.with(viewHolder.logo).load(currentStation.getStationLogoUrl()).into(viewHolder.logo);
+        if (currentStation.getLogoUrl() != null && !currentStation.getUrl().isEmpty()) {
+            Glide.with(viewHolder.logo).load(currentStation.getLogoUrl()).into(viewHolder.logo);
         }
 
         viewHolder.itemView.setOnClickListener(view -> {
-            RadioActivity.playAudio(RayoHandler.genUrl(currentStation.getStationUrl()), view.getContext(), currentStation.getStationLogoUrl(), currentStation.getStationName());
+            RadioActivity.playAudio(RayoHandler.genUrl(currentStation.getUrl()), view.getContext(), currentStation.getLogoUrl(), currentStation.getName());
         });
     }
 

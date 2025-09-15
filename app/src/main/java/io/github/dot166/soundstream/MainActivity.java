@@ -1,6 +1,6 @@
 package io.github.dot166.soundstream;
 
-import static io.github.dot166.soundstream.RadioRegistryHelper.getStationsFromRegistry;
+import static io.github.dot166.jlib.registry.RegistryHelper.getFromRegistry;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import io.github.dot166.jlib.LIBAboutActivity;
 import io.github.dot166.jlib.app.jActivity;
+import io.github.dot166.jlib.registry.RegistryEditActivity;
 import io.github.dot166.jlib.utils.AppUtils;
 import io.github.dot166.jlib.utils.ErrorUtils;
 import io.github.dot166.jlib.widget.MiniPlayer;
@@ -27,15 +28,15 @@ public class MainActivity extends jActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        XmlHelper.migrate(this);
         setContentView(R.layout.activity_main);
         setSupportActionBar(findViewById(R.id.action_bar));
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(true);
-        mAdapter = new StationAdapter(getStationsFromRegistry(this));
+        mAdapter = new StationAdapter(getFromRegistry(this));
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
-        //RadioActivity.playAudio(RayoHandler.genUrl("https://stream-al.hellorayo.co.uk/hitsradiopride.aac"), this, "https://media.bauerradio.com/image/upload/c_crop,g_custom/v1713801146/brand_manager/stations/qkt29lotqatw0dnhoxvl.jpg", "Hits Radio PRIDE");
     }
 
     @Override
@@ -43,7 +44,7 @@ public class MainActivity extends jActivity {
         super.onResume();
         ((MiniPlayer)findViewById(R.id.player)).onResumeHook();
         mAdapter.getStationList().clear();
-        mAdapter.getStationList().addAll(getStationsFromRegistry(this));
+        mAdapter.getStationList().addAll(getFromRegistry(this));
         mAdapter.notifyDataSetChanged();
     }
 

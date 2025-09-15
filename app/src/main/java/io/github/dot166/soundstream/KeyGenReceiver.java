@@ -14,6 +14,9 @@ import androidx.media3.session.SessionToken;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.util.Calendar;
+
+import io.github.dot166.jlib.time.ReminderItem;
 import io.github.dot166.jlib.utils.ErrorUtils;
 
 public class KeyGenReceiver extends BroadcastReceiver {
@@ -25,7 +28,7 @@ public class KeyGenReceiver extends BroadcastReceiver {
             ExoPlayer player = (ExoPlayer) rs.mediaSession.getPlayer();
             if (player.getCurrentMediaItem() != null && player.getCurrentMediaItem().localConfiguration != null) {
                 String urltest = player.getCurrentMediaItem().localConfiguration.uri.toString();
-                String url = urltest.replace(urltest.split("aw_0_1st.skey=")[1], String.valueOf(System.currentTimeMillis() / 1000));
+                String url = RayoHandler.genUrl(urltest);
 
                 MediaItem.Builder mIBuilder = new MediaItem.Builder();
                 mIBuilder.setUri(url);
@@ -37,6 +40,10 @@ public class KeyGenReceiver extends BroadcastReceiver {
                 player.prepare();
                 player.play();
             }
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + 4);
+            ReminderItem reminderItem = new ReminderItem(cal.getTimeInMillis(), 1);
+            new KeyGenScheduler(rs.getBaseContext()).schedule(reminderItem);
         }
     }
 }

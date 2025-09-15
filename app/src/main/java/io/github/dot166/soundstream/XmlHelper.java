@@ -1,5 +1,7 @@
 package io.github.dot166.soundstream;
 
+import static android.widget.Toast.LENGTH_LONG;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -7,81 +9,32 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import android.util.Xml;
+import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.dot166.jlib.registry.RegistryHelper;
 import io.github.dot166.jlib.utils.ErrorUtils;
 
 public class XmlHelper {
 
-    public static void writeXmlToFile(Context context, String fileName, List<RadioRegistryHelper.Station> stations) {
-        try {
-            // Create an XmlSerializer instance
-            XmlSerializer serializer = Xml.newSerializer();
-            // Open file output stream
-            FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-            OutputStreamWriter writer = new OutputStreamWriter(fos);
-
-            // Initialize XML Serializer
-            serializer.setOutput(writer);
-
-            // Start XML document
-            serializer.startDocument("UTF-8", true);
-
-            // Start a root element
-            serializer.startTag("", "stations");
-
-            // Add child elements with data
-            for (int i = 0; i < stations.size(); i++) {
-                RadioRegistryHelper.Station station = stations.get(i);
-                serializer.startTag("", "station");
-                serializer.attribute("", "stationName", station.getStationName());
-                serializer.attribute("", "stationUrl", station.getStationUrl());
-                serializer.attribute("", "stationLogoUrl", station.getStationLogoUrl());
-                serializer.endTag("", "station");
-            }
-
-            // End root element
-            serializer.endTag("", "stations");
-
-            // End the document
-            serializer.endDocument();
-
-            writer.close(); // Close the writer to save the file
-
-        } catch (Exception e) {
-            ErrorUtils.handle(e, context);
-        }
-    }
-
-    public static List<RadioRegistryHelper.Station> readXmlFromFile(Context context, String fileName) {
-        return readXmlFromFile(context, fileName, null);
-    }
-
-    public static List<RadioRegistryHelper.Station> readXmlFromFile(Context context, String fileName, Uri uri) {
-        List<RadioRegistryHelper.Station> stationList = new ArrayList<>();
+    public static void migrate(Context context) {
+        List<RegistryHelper.Object> stationList = new ArrayList<>();
         try {
             // Open the XML file
-            InputStream fis;
-            if (uri != null) {
-                fis = context.getContentResolver().openInputStream(uri);
-            } else {
-                fis = context.openFileInput(fileName);
-            }
+            InputStream fis = context.openFileInput("radioRegistry.xml");
             InputStreamReader reader = new InputStreamReader(fis);
 
             // Create a new XML pull parser instance
@@ -104,12 +57,14 @@ public class XmlHelper {
                     }
                     attributes.put(key_value_pair[0], value);
                 }
-                stationList.add(new RadioRegistryHelper.Station(attributes));
+                stationList.add(new RegistryHelper.Object(attributes));
             }
+            io.github.dot166.jlib.registry.XmlHelper.writeXmlToFile(context, "Registry.xml", stationList);
+            context.deleteFile("radioRegistry.xml");
+            Toast.makeText(context, "Migration Complete", LENGTH_LONG).show();
         } catch (Exception e) {
-            ErrorUtils.handle(e, context);
+            Log.i("jLib", "must have migrated already");
         }
-        return stationList;
     }
 
     private static String parseXmlAsString(@NonNull XmlPullParser in)
